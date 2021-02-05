@@ -1,177 +1,239 @@
+import math
 import random
-from matplotlib import pyplot as plt
 import numpy as np
 from typing import Tuple
 from heapq import heappush, heappop
-import math
+from matplotlib import pyplot as plt
+from matplotlib.colors import ListedColormap
 
-path = []  # global var
-
-
-#dim=int(input("What is the dimension of the maze?\n"))
 
 class Coord:
     def __init__(self, m: {np.ndarray, list}, x: int, y: int):
-        self.x = x
-        self.y = y
-        self.m = m
-        self.dim = len(m)
-        self.prev = None  # for tracing the path in DFS/BFS
-        self.steps = 0
-        self.distance = 0  # for A* search algorithm
-
-    def is_valid(self):
-        """check whether the Coord is within the maze.
-        :return: boolean
+        """initialize the object
+        :param m: a squared matrix. m[i][j] = 0 -> available, 1 -> occupied, -1 -> visited, 2 -> shortest path
+        :param x: x-coord of the cell
+        :param y: y-coord of the cell
         """
-        return (self.x >= 0) and (self.x < self.dim) and (self.y >= 0) and (self.y < self.dim)
+        self._m = m
+        self._x = x
+        self._y = y
+        self._prev = None  # for tracing the path
 
     def is_available(self):
-        """check whether the Coord is not occupied and also not restricted
+        """check whether the cell is available in the game
         :return: boolean
         """
-        return self.is_valid() and self.m[self.x][self.y] == 0
+        return self._m[self._x][self._y] == 0
 
-    def restrict(self):
+    def get_neighbor_coords(self):
+        x, y = (self._x, self._y)
+        coords = [(x, y + 1), (x - 1, y), (x + 1, y), (x, y - 1)]
+        dim = len(self._m)
+        li = [(a, b) for (a, b) in coords if 0 <= a < dim and 0 <= b < dim and self._m[a][b] == 0]
+        return li
+
+    def close(self):
         """mark Coord as restricted.
         :return: void
         """
-        self.m[self.x][self.y] = -1
+        # self._steps += 1  # increment _steps already taken from start to current location.
+        self._m[self._x][self._y] = -1  # mark as visited
 
     def get_neighbors(self):
         """get the neighbor cells for the given cell
-        :param self: location (an integer tuple) of the cell
         :return: a list of available neighbor cells
         """
-        m = self.m
-        up = Coord(m, self.x - 1, self.y)
-        down = Coord(m, self.x + 1, self.y)
-        left = Coord(m, self.x, self.y - 1)
-        right = Coord(m, self.x, self.y + 1)
-        elements = [up.is_available() and up, left.is_available() and left,
-                    down.is_available() and down, right.is_available() and right]
-        return [e for e in elements if e]  # get rid of 'False' elements
+        return [Coord(self._m, x, y) for x, y in self.get_neighbor_coords()]
 
-    def update_distance(self):
-        #  steps already taken + Euclidean distance to the goal
-        self.distance = self.steps + math.sqrt((self.x - self.dim - 1) ** 2
-                                               + (self.y - self.dim - 1) ** 2)
+    def get_coords(self):
+        """getter
+        :return: coordinates of the cell
+        """
+        return self._x, self._y
+
+    def set_prev_to(self, other: 'Coord'):
+        """setter
+        :param other: the previous cell
+        :return: None
+        """
+        self._prev = other
 
     def get_path(self):
+        """get the complete path from start to goal
+        :return: a list of cells that form the path
+        """
         cell = self
-        path = []
+        path_nodes = []
         while cell:
-            path.insert(0, (cell.x, cell.y))  # insert to the front of the list
-            cell = cell.prev
-        return path
+            self._m[cell._x][cell._y] = 2  # mark the shortest path in matrix
+            path_nodes = [(cell._x, cell._y)] + path_nodes  # insert to the front of the list
+            cell = cell._prev
+        return path_nodes
 
-    def __lt__(self, other: 'Coord'):  # for comparison in priority heap
-        return self.distance < other.distance
-
-
-def is_reachable(m: {np.ndarray, list}, start: Tuple[int, int], goal: Tuple[int, int], is_dfs: bool):
-    """check whether goal(goal) is reachable from s(start) in the maze
-    :param m: maze
-    :param start: int tuple contains starting coordinates
-    :param goal: int tuple contains goal coordinates
-    :param is_dfs: True/False for dfs/bfs
-    :return whether start and goal are reachable from each other
-    """
-    if m[start[0]][start[1]] == 1 or m[goal[0]][goal[1]] == 1:
-        return False  # not reachable because the start/target c is occupied.
-    fringe = [Coord(m, start[0], start[1])]  # stack/queue
-    while len(fringe) != 0:
-        cell = fringe.pop() if is_dfs else fringe.pop(0)  # dfs/bfs
-        if (cell.x, cell.y) == goal:
-            global path
-            path = cell.get_path()
-            # print(cell.get_path())
-            return True
-        else:  # add valid neighbor cells to fringe
-            neighbors = cell.get_neighbors()
-            for ne in neighbors:
-                ne.prev = cell
-            fringe.extend(neighbors)
-            cell.restrict()  # add restriction
-    return False
+    def __str__(self):  # override
+        return f'({self._x}, {self._y})'
 
 
-def dfs(m: {np.ndarray, list}, start: Tuple[int, int], goal: Tuple[int, int]):
-    return is_reachable(m, start, goal, True)
+class EuclideanCoord(Coord):
+    def __init__(self, m: {np.ndarray, list}, x: int, y: int):
+        """ inherit Coord
+        :param m: matrix
+        :param x: x-coord
+        :param y: y-coord
+        """
+        super().__init__(m, x, y)
+        self._steps = 0  # g(max_dim), informed search: f(max_dim) = g(max_dim) + h(max_dim)
+
+    def close(self):  # override
+        """mark Coord as restricted.
+        :return: void
+        """
+        self._steps += 1  # increment _steps already taken
+        super(EuclideanCoord, self).close()
+
+    def get_neighbors(self):  # override
+        """get the neighbor cells for the given cell
+        :return: a list of available neighbor cells
+        """
+        return [EuclideanCoord(self._m, x, y) for x, y in super(EuclideanCoord, self).get_neighbor_coords()]
+
+    def copy_steps_from(self, other: 'EuclideanCoord'):
+        """setter
+        :param other: the cell to copy from
+        :return: None
+        """
+        self._steps = other._steps
+
+    def __euclidean_distance(self):
+        """heuristic
+        :return: euclidean distance from the cell to the goal
+        """
+        return math.sqrt((len(self._m) - self._x - 1) ** 2 + (len(self._m) - self._y - 1) ** 2)
+
+    def __lt__(self, other: 'EuclideanCoord'):
+        """less than function, for peer comparison
+        :param other: an EuclideanCoord object
+        :return: whether this cell has better heuristic value over the other cell
+        """
+        return self._steps + self.__euclidean_distance() < other._steps + other.__euclidean_distance()
 
 
-def bfs(m: {np.ndarray, list}, start: Tuple[int, int], goal: Tuple[int, int]):
-    return is_reachable(m, start, goal, False)
+class MazeGame:
+    def __init__(self, dimension: int, prob: float):
+        """initialize the object
+        :param dimension: dimension of the matrix that represents the maze
+        :param prob: density of blocked cells in the maze
+        """
+        self._dim = dimension
+        self._p = prob  # block density
+        self._m = self.__generate_maze()  # original matrix
+        self._path = []  # list of Coords that form the path
+        self._matrix = None  # result matrix
+
+    def __generate_maze(self):
+        """generate the matrix for the maze game
+        :return: an numpy 2d array with 0s(available cells) and 1s(blocked cells)
+        """
+        mat = [[1 if random.uniform(0, 1) <= self._p else 0 for _ in range(self._dim)] for _ in range(self._dim)]
+        mat[0][0] = 0
+        mat[self._dim - 1][self._dim - 1] = 0
+        return np.array(mat)
+
+    def __is_reachable(self, start: Tuple[int, int], goal: Tuple[int, int], is_dfs: bool):
+        """check whether goal(goal) is reachable from s(start) in the maze
+        :param start: int tuple contains starting coordinates
+        :param goal: int tuple contains goal coordinates
+        :param is_dfs: True/False for dfs/bfs
+        :return whether start and goal are reachable from each other
+        """
+        self._matrix = self._m.copy()
+        m = self._matrix
+        if m[start[0]][start[1]] == 1 or m[goal[0]][goal[1]] == 1:
+            return False  # not reachable because the start/target c is occupied.
+        fringe = [Coord(m, start[0], start[1])]  # stack/queue
+        while len(fringe) != 0:
+            cell = fringe.pop(-1) if is_dfs else fringe.pop(0)  # dfs/bfs
+            if not cell.is_available():
+                continue
+            cell.close()  # add restriction
+            if cell.get_coords() == goal:
+                self._path = cell.get_path()
+                return True
+            else:  # add valid neighbor cells to fringe
+                neighbors = cell.get_neighbors()
+                for ne in neighbors:
+                    ne.set_prev_to(cell)
+                    fringe.append(ne)
+        return False
+
+    def dfs(self, start: Tuple[int, int], goal: Tuple[int, int]):
+        return self.__is_reachable(start, goal, True)
+
+    def bfs(self, start: Tuple[int, int], goal: Tuple[int, int]):
+        return self.__is_reachable(start, goal, False)
+
+    def a_star(self, start: Tuple[int, int], goal: Tuple[int, int]):
+        """
+        A* search: heuristic function = Euclidean distance to the goal
+        :param start: int tuple contains starting coordinates
+        :param goal: int tuple contains goal coordinates
+        :return whether start and goal are reachable from each other
+        """
+        self._matrix = self._m.copy()
+        m = self._matrix
+        if m[start[0]][start[1]] == 1 or m[goal[0]][goal[1]] == 1:
+            return False  # not reachable because the start/target cell is occupied.
+        heap = []  # priority heap
+        start_cell = EuclideanCoord(m, start[0], start[1])
+        heappush(heap, start_cell)
+        while len(heap) != 0:
+            cell = heappop(heap)
+            if not cell.is_available():
+                continue
+            cell.close()  # add restriction
+            if cell.get_coords() == goal:
+                self._path = cell.get_path()
+                return True
+            else:  # add valid neighbor cells to fringe
+                neighbors = cell.get_neighbors()
+                for ne in neighbors:
+                    ne.set_prev_to(cell)
+                    ne.copy_steps_from(cell)
+                    heappush(heap, ne)
+        return False
+
+    def get_path(self):
+        """getter
+        :return: a list of cells that form the shortest path
+        """
+        return self._path
+
+    def get_original_matrix(self):
+        """getter
+        :return: original matrix
+        """
+        return self._m
+
+    def get_result_matrix(self):
+        """getter
+        :return: None or final matrix
+        """
+        return self._matrix
+
+    def plot(self):
+        """plot the matrix: yellow - visited cells, white - available cells, grey - blocked cells, green - shortest path
+        :return: None
+        """
+        color_list = ['#ffff00', 'w', '#808080', 'g']  # [-1 yellow, 0 white, 1 grey, 2 green]
+        colors = ListedColormap(color_list if len(self._path) > 0 else color_list[:-1])
+        plt.matshow(self._matrix, interpolation='none', cmap=colors)
+        plt.show()
 
 
-def distance_priority_search(m: {np.ndarray, list}, start: Tuple[int, int], goal: Tuple[int, int]):
-    """
-    A* search: find the shortest path from start to goal based on Euclidean distance to the goal
-    :param m: maze
-    :param start: int tuple contains starting coordinates
-    :param goal: int tuple contains goal coordinates
-    :return whether start and goal are reachable from each other
-    """
-    if m[start[0]][start[1]] == 1 or m[goal[0]][goal[1]] == 1:
-        return False  # not reachable because the start/target cell is occupied.
-    heap = []  # priority heap
-    heappush(heap, Coord(m, start[0], start[1]))
-    while len(heap) != 0:
-        cell = heappop(heap)
-        cell.steps += 1
-        cell.update_distance()
-        if (cell.x, cell.y) == goal:
-            global path
-            path = cell.get_path()
-            # print(len(path), path, cell.steps, cell.distance)
-            return True
-        else:  # add valid neighbor cells to fringe
-            neighbors = cell.get_neighbors()
-            for ne in neighbors:
-                ne.prev = cell
-                ne.steps = cell.steps
-                ne.update_distance()
-                heappush(heap, ne)
-            cell.restrict()  # add restriction
-    return False
-
-def generate_maze(dim, p):
-    mat = [[1 if random.uniform(0,1) <= p else 0 for j in range(dim)] for i in range(dim)]
-    mat[0][0] = 0
-    mat[dim-1][dim-1] = 0
-    plt.imshow(mat, cmap='Greys', interpolation="nearest")
-    plt.show()
-    return mat
-
-
-# def DFS(maze, src=Coord(0,0), dest=Coord(dim, dim)):
-#     print(maze[src.x])
-
-# def problem_1(p, dim=dim):
-#     print('Here is your maze:')
-#     return generate_maze(dim, p)
-
-# maze = problem_1(0.3)
-# DFS(maze)
-
-
-def test_dfs(dim: int, trials: int):
-    results = []
-    density = 0
-    while density <= 0.6:
-        trial = 0
-        res = []
-        while trial < trials:
-            mat = generate_maze(dim, density)
-            res.append(dfs(mat, (0, 0), (dim - 1, dim - 1)))
-            trial += 1
-        print(f'density={round(density, 3)}, res={res.count(True)}')
-        results.append((round(density, 3), 0.01 * res.count(True)))
-        density += 0.01
-    print(results)
-
-
+# Test
 if __name__ == '__main__':
-    maze = generate_maze(10, 0.2)
-    print(distance_priority_search(maze, (0, 0), (9, 9)))
-    print(len(path), path)
+    n = 10
+    p = 0.3
+    game = MazeGame(n, p)
+    print(game.a_star((0, 0), (n - 1, n - 1)))
+    game.plot()
