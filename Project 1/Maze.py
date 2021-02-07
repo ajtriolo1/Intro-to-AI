@@ -237,7 +237,7 @@ class MazeGame:
        self._fire_loc.append((free_x, free_y))
        return (free_x, free_y)
        
-    def start_game(self):
+    def start_fire_maze(self):
         self.set_fire()
         success = self.bfs((0,0), (self._dim-1, self._dim-1))
         return success
@@ -335,11 +335,11 @@ if __name__ == '__main__':
     '''
     game = MazeGame(n, p, q)
     maze = game.get_original_matrix()
-    game.start_game()
+    game.start_fire_maze()
     print("Strat 1")
     game.strat_1()
     game_2 = MazeGame(n, p, q, maze)
-    game_2.start_game()
+    game_2.start_fire_maze()
     print("Strat 2")
     game_2.strat_2()
     #print(game.a_star((0, 0), (n - 1, n - 1)))
