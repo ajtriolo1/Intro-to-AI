@@ -127,7 +127,7 @@ class MazeGame:
         self._dim = dimension
         self._p = prob  # block density
         if len(m) != 0:
-            self._m = m
+            self._m = m.copy()
         else:
             self._m = self.generate_maze()  # original matrix
         self._path = []  # list of Coords that form the path
@@ -335,12 +335,10 @@ if __name__ == '__main__':
     '''
     game = MazeGame(n, p, q)
     maze = game.get_original_matrix()
-    game.start_fire_maze()
-    print("Strat 1")
-    game.strat_1()
-    game_2 = MazeGame(n, p, q, maze)
-    game_2.start_fire_maze()
-    print("Strat 2")
-    game_2.strat_2()
+    for i in range (5):
+        print(i)
+        fire_game = MazeGame(n, p, q, maze)
+        fire_game.start_fire_maze()
+        fire_game.strat_1()
     #print(game.a_star((0, 0), (n - 1, n - 1)))
     
