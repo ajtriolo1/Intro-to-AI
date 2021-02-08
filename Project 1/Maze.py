@@ -23,13 +23,13 @@ class Coord:
         """check whether the cell is available in the game
         :return: boolean
         """
-        return self._m[self._x][self._y] == 0
+        return self._m[self._x][self._y] == 0 or self._m[self._x][self._y] == -2
 
     def get_neighbor_coords(self):
         x, y = (self._x, self._y)
         coords = [(x, y + 1), (x - 1, y), (x + 1, y), (x, y - 1)]
         dim = len(self._m)
-        li = [(a, b) for (a, b) in coords if 0 <= a < dim and 0 <= b < dim and self._m[a][b] == 0]
+        li = [(a, b) for (a, b) in coords if 0 <= a < dim and 0 <= b < dim and (self._m[a][b] == 0 or self._m[a][b] == -2)]
         return li
 
     def close(self):
@@ -240,6 +240,7 @@ class MazeGame:
     def start_fire_maze(self):
         self.set_fire()
         success = self.bfs((0,0), (self._dim-1, self._dim-1))
+        self.plot_fire()
         return success
         
     def spread_fire(self):
@@ -279,22 +280,29 @@ class MazeGame:
         return True
     
     def strat_2(self):
-        for point in self._path:
-            if point[0] == 0 and point[1] == 0:
-                self._m[point[0]][point[1]] = -2
-                continue
-            success = self.bfs((point[0],point[1]), (self._dim-1, self._dim-1))
-            self.plot_fire()
-            if success == False:
-                return False
+        self._m[0][0] = -2
+        while len(self._path) != 1:
+            point = self._path[1]
+            print("Now at ", (point[0], point[1]))
+            self.spread_fire()
+            self.plot_spread()
             for fire in self._fire_loc:
                if point[0] == fire[0] and point[1] == fire[1]:
+                   print("Step on fire at: ", (point[0], point[1]))
                    return False
             else:
-                self._m[point[0]][point[1]] = -2
-                self.spread_fire()
-                if point[0] == fire[0] and point[1] == fire[1]:
+                success = self.bfs((point[0],point[1]), (self._dim-1, self._dim-1))
+                if success == False:
+                    self.plot_fire()
+                    print("No path")
                     return False
+                self._m[point[0]][point[1]] = -2
+                self.plot_fire()
+                print(self._path)
+                if point[0] == fire[0] and point[1] == fire[1]:
+                    self.plot_spread()
+                    return False
+        self.plot_spread()
         return True                    
         
     def plot(self):
@@ -324,7 +332,7 @@ class MazeGame:
 if __name__ == '__main__':
     n = 10
     p = 0.1
-    q = 0.3
+    q = 0.1
     '''This will be what we use for testing strats
     for i in range (10): 
         game = MazeGame(n, p, q)
@@ -335,10 +343,14 @@ if __name__ == '__main__':
     '''
     game = MazeGame(n, p, q)
     maze = game.get_original_matrix()
+    game.start_fire_maze()
+    game.strat_2()
+    '''
     for i in range (5):
         print(i)
         fire_game = MazeGame(n, p, q, maze)
         fire_game.start_fire_maze()
         fire_game.strat_1()
+    '''
     #print(game.a_star((0, 0), (n - 1, n - 1)))
     
