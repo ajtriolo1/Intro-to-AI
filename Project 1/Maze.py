@@ -134,6 +134,7 @@ class MazeGame:
         self._matrix = None  # result matrix
         self._fire_loc = []
         self._q = fire_spread
+        self._fire_path = None
 
     def generate_maze(self):
         """generate the matrix for the maze game
@@ -240,7 +241,7 @@ class MazeGame:
     def start_fire_maze(self):
         self.set_fire()
         success = self.bfs((0,0), (self._dim-1, self._dim-1))
-        self.plot_fire()
+        self.plot_path()
         return success
         
     def spread_fire(self):
@@ -263,76 +264,76 @@ class MazeGame:
             self._m[fire[0]][fire[1]] = 3
         
     def strat_1(self):
-        for point in self._path:
-            self.plot_spread()
+        self._fire_path = self._m.copy()
+        self._fire_path[0][0] = -2
+        for point in self._path[1:]:
+            if(point[0] == self._dim-1 and point[1] == self._dim-1):
+                self._fire_path = self._m.copy()
+                self._fire_path[point[0]][point[1]] = -2
+                self.plot_spread()
+                return True
+            self.spread_fire()
+            self._fire_path = self._m.copy()
+            self._fire_path[point[0]][point[1]] = -2
             for fire in self._fire_loc:
                 if point[0] == fire[0] and point[1] == fire[1]:
+                    self._fire_path[point[0]][point[1]] = 3
+                    self.plot_on_fire()
+                    print("Fire spread on you at: ", (point[0], point[1]))
                     return False
-            if point[0] == 0 and point[1] == 0:
-                self._m[point[0]][point[1]] = -2
-                continue
-            else:
-                self._m[point[0]][point[1]] = -2
-                self.spread_fire()
-                if point[0] == fire[0] and point[1] == fire[1]:
-                    return False
-                
-        return True
+            self.plot_spread()
     
     def strat_2(self):
-        self._m[0][0] = -2
-        while len(self._path) != 1:
+        self._fire_path = self._m.copy()
+        self._fire_path[0][0] = -2
+        while len(self._path) > 1:
+            point = None
             point = self._path[1]
-            print("Now at ", (point[0], point[1]))
+            self._fire_path = self._m.copy()
+            self._fire_path[point[0]][point[1]] = -2
             self.spread_fire()
-            self.plot_spread()
             for fire in self._fire_loc:
                if point[0] == fire[0] and point[1] == fire[1]:
-                   print("Step on fire at: ", (point[0], point[1]))
+                   self._fire_path[point[0]][point[1]] = 3
+                   self.plot_on_fire()
+                   print("Fire spread on you at: ", (point[0], point[1]))
                    return False
-            else:
-                success = self.bfs((point[0],point[1]), (self._dim-1, self._dim-1))
-                if success == False:
-                    self.plot_fire()
-                    print("No path")
-                    return False
-                self._m[point[0]][point[1]] = -2
-                self.plot_fire()
-                print(self._path)
-                if point[0] == fire[0] and point[1] == fire[1]:
-                    self.plot_spread()
-                    return False
-        self.plot_spread()
+            self.plot_spread()
+            success = self.bfs((point[0],point[1]), (self._dim-1, self._dim-1))
+            if success == False:
+                self.plot_path()
+                print("No path")
+                return False
+            if(len(self._path) != 1):
+                self.plot_path()
         return True                    
         
-    def plot(self):
-        """plot the matrix: yellow - visited cells, white - available cells, grey - blocked cells, green - shortest path
-        :return: None
-        """
-        color_list = ['#ffff00', 'w', '#808080', 'g']  # [-1 yellow, 0 white, 1 grey, 2 green]
-        colors = ListedColormap(color_list if len(self._path) > 0 else color_list[:-1])
-        plt.matshow(self._matrix, interpolation='none', cmap=colors)
+    def plot_on_fire(self):
+        color_list = ['w', '#808080', 'g', '#FFA500']  # [0 white, 1 grey, 2 green, 3 orange]
+        no_path_colors = ['#ffff00', 'w', '#808080', '#FFA500']
+        colors = ListedColormap(color_list if len(self._path) > 0 else no_path_colors)
+        plt.matshow(self._fire_path, interpolation='none', cmap=colors)
         plt.show()
         
-    def plot_fire(self):
-        color_list = ['#800080', '#ffff00', 'w', '#808080', 'g', '#FFA500']  # [-1 yellow, 0 white, 1 grey, 2 green, 3 orange]
+    def plot_path(self):
+        color_list = ['#ffff00', 'w', '#808080', 'g', '#FFA500']  # [-1 yellow, 0 white, 1 grey, 2 green, 3 orange]
         no_path_colors = ['#ffff00', 'w', '#808080', '#FFA500']
         colors = ListedColormap(color_list if len(self._path) > 0 else no_path_colors)
         plt.matshow(self._matrix, interpolation='none', cmap=colors)
         plt.show()
         
     def plot_spread(self):
-        color_list = ['#800080', '#ffff00', 'w', '#808080', 'g', '#FFA500']  # [-1 yellow, 0 white, 1 grey, 2 green, 3 orange]
+        color_list = ['#800080','#ffff00', 'w', '#808080', 'g', '#FFA500']  # [-2 purple, -1 yellow, 0 white, 1 grey, 2 green, 3 orange]
         no_path_colors = ['w', '#808080', '#FFA500']
         colors = ListedColormap(color_list if len(self._path) > 0 else no_path_colors)
-        plt.matshow(self._m, interpolation='none', cmap=colors)
+        plt.matshow(self._fire_path, interpolation='none', cmap=colors)
         plt.show()
         
 # Test
 if __name__ == '__main__':
     n = 10
     p = 0.1
-    q = 0.1
+    q = 0.2
     '''This will be what we use for testing strats
     for i in range (10): 
         game = MazeGame(n, p, q)
@@ -344,7 +345,7 @@ if __name__ == '__main__':
     game = MazeGame(n, p, q)
     maze = game.get_original_matrix()
     game.start_fire_maze()
-    game.strat_2()
+    print(game.strat_2())
     '''
     for i in range (5):
         print(i)
