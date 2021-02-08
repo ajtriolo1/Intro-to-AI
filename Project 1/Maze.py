@@ -277,6 +277,7 @@ class MazeGame:
             self._fire_path[point[0]][point[1]] = -2
             for fire in self._fire_loc:
                 if point[0] == fire[0] and point[1] == fire[1]:
+                    self._fire_path = self._m.copy()
                     self._fire_path[point[0]][point[1]] = 3
                     self.plot_on_fire()
                     print("Fire spread on you at: ", (point[0], point[1]))
@@ -289,15 +290,21 @@ class MazeGame:
         while len(self._path) > 1:
             point = None
             point = self._path[1]
-            self._fire_path = self._m.copy()
-            self._fire_path[point[0]][point[1]] = -2
+            if(point[0] == self._dim-1 and point[1] == self._dim-1):
+                self._fire_path = self._m.copy()
+                self._fire_path[point[0]][point[1]] = -2
+                self.plot_spread()
+                return True
             self.spread_fire()
             for fire in self._fire_loc:
                if point[0] == fire[0] and point[1] == fire[1]:
+                   self._fire_path = self._m.copy()
                    self._fire_path[point[0]][point[1]] = 3
                    self.plot_on_fire()
                    print("Fire spread on you at: ", (point[0], point[1]))
                    return False
+            self._fire_path = self._m.copy()
+            self._fire_path[point[0]][point[1]] = -2 
             self.plot_spread()
             success = self.bfs((point[0],point[1]), (self._dim-1, self._dim-1))
             if success == False:
