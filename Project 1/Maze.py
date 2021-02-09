@@ -6,6 +6,7 @@ from heapq import heappush, heappop
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 import decimal
+import plotly.express as px
 
 
 class Coord:
@@ -362,13 +363,84 @@ class MazeGame:
         plt.show()
         
         
-        
+def test_strat_1(n):
+    average_success_per_q = []
+    q=0.0
+    while q/10 <= 1.0:
+        print("Running mazes for q=", q/10)
+        success_per_maze = []
+        i=1
+        while i <= 10:
+            success = 0
+            game = MazeGame(n, 0.3, q/10)
+            maze = game.get_original_matrix()
+            if game.dfs((0,0), (n-1,n-1)) == False:
+                continue
+            print("Maze", i)
+            j=1
+            while j<= 10:
+                fire_game = MazeGame(n, 0.3, q/10, maze)
+                if fire_game.start_fire_maze() == False:
+                    continue
+                if fire_game.strat_1() == True:
+                    success+=1
+                    j+=1
+                else:
+                    j+=1
+            success_per_maze.append(success)
+            i+=1
+        maze_success = 0
+        for success in success_per_maze:
+            maze_success+=success
+        average_success_per_q.append(maze_success/10)
+        q+=1
+    return average_success_per_q
+def test_strat_2(n):
+    average_success_per_q = []
+    q=0.0
+    while q/10 <= 1.0:
+        print(q/10)
+        success_per_maze = []
+        i=1
+        while i <= 10:
+            success = 0
+            game = MazeGame(n, 0.3, q/10)
+            maze = game.get_original_matrix()
+            if game.dfs((0,0), (n-1,n-1)) == False:
+                continue
+            j=1
+            while j<= 10:
+                fire_game = MazeGame(n, 0.3, q/10, maze)
+                if fire_game.start_fire_maze() == False:
+                    continue
+                if fire_game.strat_2() == True:
+                    success+=1
+                    j+=1
+                else:
+                    j+=1
+            success_per_maze.append(success)
+            i+=1
+        maze_success = 0
+        for success in success_per_maze:
+            maze_success+=success
+        average_success_per_q.append(maze_success/10)
+        q+=1
+    return average_success_per_q
+
 # Test
 if __name__ == '__main__':
-    n = 10
+    n = 50
     p = 0.3
     q = 0.3
     
+    q_vals = ['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0']
+    avg_success = np.array(test_strat_1(n))
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.bar(q_vals, avg_success)
+    plt.yticks(np.arange(0, avg_success.max()+1, 1))
+    plt.show()
+    #test_strat_2(n)
     '''This will be what we use for testing strats
     for i in range (10): 
         game = MazeGame(n, p, q)
@@ -389,66 +461,3 @@ if __name__ == '__main__':
         fire_game.strat_1()
     #print(game.a_star((0, 0), (n - 1, n - 1)))
     '''
-def test_strat_1():
-    average_success_per_q = []
-    q=0.0
-    while q/10 <= 1.0:
-        print(q/10)
-        success_per_maze = []
-        i=1
-        while i <= 10:
-            success = 0
-            game = MazeGame(10, 0.3, q)
-            maze = game.get_original_matrix()
-            if game.dfs((0,0), (9,9)) == False:
-                continue
-            j=1
-            while j<= 10:
-                fire_game = MazeGame(10, 0.3, q/10, maze)
-                if fire_game.start_fire_maze() == False:
-                    continue
-                if fire_game.strat_1() == True:
-                    success+=1
-                    j+=1
-                else:
-                    j+=1
-            success_per_maze.append(success)
-            i+=1
-        maze_success = 0
-        for success in success_per_maze:
-            maze_success+=success
-        average_success_per_q.append(maze_success/10)
-        q+=1
-    print(average_success_per_q)
-def test_start_2():
-    average_success_per_q = []
-    q=0.0
-    while q/10 <= 1.0:
-        success_per_maze = []
-        i=1
-        while i <= 10:
-            success = 0
-            game = MazeGame(10, 0.3, q)
-            maze = game.get_original_matrix()
-            if game.dfs((0,0), (9,9)) == False:
-                continue
-            j=1
-            while j<= 10:
-                fire_game = MazeGame(10, 0.3, q/10, maze)
-                if fire_game.start_fire_maze() == False:
-                    continue
-                if fire_game.strat_2() == True:
-                    success+=1
-                    j+=1
-                else:
-                    j+=1
-            success_per_maze.append(success)
-            i+=1
-        maze_success = 0
-        for success in success_per_maze:
-            maze_success+=success
-        average_success_per_q.append(maze_success/10)
-        q+=1
-    print(average_success_per_q)
-test_strat_1()
-test_start_2()
