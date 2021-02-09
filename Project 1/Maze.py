@@ -5,6 +5,7 @@ from typing import Tuple
 from heapq import heappush, heappop
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
+import decimal
 
 
 class Coord:
@@ -234,14 +235,16 @@ class MazeGame:
        index = random.randrange(0, len(free_spaces))
        free_x = free_spaces[index][0]
        free_y = free_spaces[index][1]
+       if self.dfs((0,0), (free_x, free_y)) == False:
+           return False
        self._m[free_x][free_y] = 3
        self._fire_loc.append((free_x, free_y))
        return (free_x, free_y)
        
     def start_fire_maze(self):
-        self.set_fire()
+        if(self.set_fire() == False):
+            return False
         success = self.bfs((0,0), (self._dim-1, self._dim-1))
-        self.plot_path()
         return success
         
     def spread_fire(self):
@@ -263,7 +266,7 @@ class MazeGame:
         for fire in self._fire_loc:
             self._m[fire[0]][fire[1]] = 3
         
-    def strat_1(self):
+    def strat_1_with_plot(self):
         self._fire_path = self._m.copy()
         self._fire_path[0][0] = -2
         for point in self._path[1:]:
@@ -283,8 +286,17 @@ class MazeGame:
                     print("Fire spread on you at: ", (point[0], point[1]))
                     return False
             self.plot_spread()
+            
+    def strat_1(self):
+        for point in self._path[1:]:
+            if(point[0] == self._dim-1 and point[1] == self._dim-1):
+                return True
+            self.spread_fire()
+            for fire in self._fire_loc:
+                if point[0] == fire[0] and point[1] == fire[1]:
+                    return False
     
-    def strat_2(self):
+    def strat_2_with_plot(self):
         self._fire_path = self._m.copy()
         self._fire_path[0][0] = -2
         while len(self._path) > 1:
@@ -313,7 +325,20 @@ class MazeGame:
                 return False
             if(len(self._path) != 1):
                 self.plot_path()
-        return True                    
+                
+    def strat_2(self):
+        while len(self._path) > 1:
+            point = None
+            point = self._path[1]
+            if(point[0] == self._dim-1 and point[1] == self._dim-1):
+                return True
+            self.spread_fire()
+            for fire in self._fire_loc:
+               if point[0] == fire[0] and point[1] == fire[1]:
+                   return False
+            success = self.bfs((point[0],point[1]), (self._dim-1, self._dim-1))
+            if success == False:
+                return False
         
     def plot_on_fire(self):
         color_list = ['w', '#808080', 'g', '#FFA500']  # [0 white, 1 grey, 2 green, 3 orange]
@@ -336,11 +361,14 @@ class MazeGame:
         plt.matshow(self._fire_path, interpolation='none', cmap=colors)
         plt.show()
         
+        
+        
 # Test
 if __name__ == '__main__':
     n = 10
-    p = 0.1
-    q = 0.2
+    p = 0.3
+    q = 0.3
+    
     '''This will be what we use for testing strats
     for i in range (10): 
         game = MazeGame(n, p, q)
@@ -349,16 +377,78 @@ if __name__ == '__main__':
             fire_game = MazeGame(n, p, q, m)
             fire_game.run_game()
     '''
+    '''
     game = MazeGame(n, p, q)
     maze = game.get_original_matrix()
-    game.start_fire_maze()
-    print(game.strat_2())
-    '''
+    if game.start_fire_maze() == False:
+        return False
     for i in range (5):
         print(i)
         fire_game = MazeGame(n, p, q, maze)
         fire_game.start_fire_maze()
         fire_game.strat_1()
-    '''
     #print(game.a_star((0, 0), (n - 1, n - 1)))
-    
+    '''
+def test_strat_1():
+    average_success_per_q = []
+    q=0.0
+    while q/10 <= 1.0:
+        print(q/10)
+        success_per_maze = []
+        i=1
+        while i <= 10:
+            success = 0
+            game = MazeGame(10, 0.3, q)
+            maze = game.get_original_matrix()
+            if game.dfs((0,0), (9,9)) == False:
+                continue
+            j=1
+            while j<= 10:
+                fire_game = MazeGame(10, 0.3, q/10, maze)
+                if fire_game.start_fire_maze() == False:
+                    continue
+                if fire_game.strat_1() == True:
+                    success+=1
+                    j+=1
+                else:
+                    j+=1
+            success_per_maze.append(success)
+            i+=1
+        maze_success = 0
+        for success in success_per_maze:
+            maze_success+=success
+        average_success_per_q.append(maze_success/10)
+        q+=1
+    print(average_success_per_q)
+def test_start_2():
+    average_success_per_q = []
+    q=0.0
+    while q/10 <= 1.0:
+        success_per_maze = []
+        i=1
+        while i <= 10:
+            success = 0
+            game = MazeGame(10, 0.3, q)
+            maze = game.get_original_matrix()
+            if game.dfs((0,0), (9,9)) == False:
+                continue
+            j=1
+            while j<= 10:
+                fire_game = MazeGame(10, 0.3, q/10, maze)
+                if fire_game.start_fire_maze() == False:
+                    continue
+                if fire_game.strat_2() == True:
+                    success+=1
+                    j+=1
+                else:
+                    j+=1
+            success_per_maze.append(success)
+            i+=1
+        maze_success = 0
+        for success in success_per_maze:
+            maze_success+=success
+        average_success_per_q.append(maze_success/10)
+        q+=1
+    print(average_success_per_q)
+test_strat_1()
+test_start_2()
