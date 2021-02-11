@@ -5,13 +5,13 @@ from Maze import *
 
 
 class FireMaze(MazeGame):
-    def __init__(self, dim: int, p: float, q: float):
-        super().__init__(dim, p)
+    def __init__(self, dim: int, p: float, q: float, maze, fire_coord):
+        super().__init__(dim, p, q)
         self._dim = dim
         self._q = q
-        self._matrix = self.get_original_matrix().copy()
+        self._matrix = maze
         self._fire_matrix = np.zeros([dim, dim])
-        self._first_fire_coord = self.__set_random_fire()
+        self._first_fire_coord = fire_coord
 
     def __set_random_fire(self):
         fire_coord = None
@@ -32,11 +32,12 @@ class FireMaze(MazeGame):
                 self._matrix[a][b] != 1]
 
     def simulate_fire(self, trials: int):
+        self._fire_matrix[self._first_fire_coord[0]][self._first_fire_coord[1]] = 1
         time_start = time.time()
         simulated_matrices = []
         i = 0
         while i < trials:
-            print(f'{i+1}th simulation:')
+            #print(f'{i+1}th simulation:')
             matrix = self._matrix.copy()
             fire_record_matrix = self._fire_matrix.copy()
             coords_on_fire = [self._first_fire_coord]
@@ -71,16 +72,17 @@ class FireMaze(MazeGame):
                 coords_on_fire = fire_coords_with_available_neighbors  # replace the firing list for the next round
                 n += 1
             i += 1
-            print(fire_record_matrix)
+            #print(fire_record_matrix)
             # the ith simulation ends, add the fire record matrix to the list
             simulated_matrices.append(fire_record_matrix)
         self._fire_matrix = np.nanmean(simulated_matrices, axis=0)  # get the average of the fire matrices.
         time_end = time.time()
-        print("Original Maze with Initial Fire:")
-        print(self._matrix)
-        print("Simulated Fire Matrix:")
-        print(self._fire_matrix)
-        print("Time consumed: ", time_end - time_start)
+        #print("Original Maze with Initial Fire:")
+        #print(self._matrix)
+        #print("Simulated Fire Matrix:")
+        #print(self._fire_matrix)
+        #print("Time consumed: ", time_end - time_start)
+        return self._fire_matrix
 
     def plot_simulated_fire_maze(self):
         fig, ax = plt.subplots()
