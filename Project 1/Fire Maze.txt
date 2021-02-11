@@ -1,1 +1,0 @@
-Calculate probabilitistic circle of where fire could go and then consider options if it intersects initial path
