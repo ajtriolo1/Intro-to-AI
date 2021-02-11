@@ -174,7 +174,7 @@ class MazeGame:
 
     def a_star(self, start: Tuple[int, int], goal: Tuple[int, int]):
         """
-        A* search: heuristic function = Euclidean distance to the goal
+        A* search: heuristic function = steps already taken + Euclidean distance to the goal
         :param start: int tuple contains starting coordinates
         :param goal: int tuple contains goal coordinates
         :return whether start and goal are reachable from each other
