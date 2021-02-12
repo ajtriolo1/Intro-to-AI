@@ -119,7 +119,7 @@ class EuclideanCoord(Coord):
         return self._steps + self.__euclidean_distance() < other._steps + other.__euclidean_distance()
 
 class SimCoord(Coord):
-    def __init__(self, m: {np.ndarray, list}, x: int, y: int, fire_prob:dict):
+    def __init__(self, m: {np.ndarray, list}, x: int, y: int, fire_prob:list):
         """ inherit Coord
         :param m: matrix
         :param x: x-coord
@@ -160,6 +160,7 @@ class SimCoord(Coord):
         :param other: a SimCoord object
         :return: whether this cell has better heuristic value over the other cell
         """
+        print(self._prob)
         return ((1/self._prob[self._x][self._y]) * (self._steps + self.__euclidean_distance())) < ((1/other._prob[other._x][other._y]) * (other._steps + other.__euclidean_distance()))
 
 class MazeGame:
@@ -495,6 +496,5 @@ if __name__ == '__main__':
     p = 0.3
     q = 1.0
     
-    
     print(test_strat_3(n))
-    print(test_strat_2(n))
+    #print(test_strat_2(n))
