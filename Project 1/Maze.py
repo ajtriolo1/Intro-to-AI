@@ -163,7 +163,7 @@ class SimCoord(Coord):
         return ((1/self._prob[self._x][self._y]) * (self._steps + self.__euclidean_distance())) < ((1/other._prob[other._x][other._y]) * (other._steps + other.__euclidean_distance()))
 
 class MazeGame:
-    def __init__(self, dimension: int, prob: float, fire_spread: float, m=np.array([])):
+    def __init__(self, dimension: int, prob: float, fire_spread=0.0, m=np.array([])):
         """initialize the object
         :param dimension: dimension of the matrix that represents the maze
         :param prob: density of blocked cells in the maze
@@ -180,6 +180,7 @@ class MazeGame:
         self._q = fire_spread
         self._fire_path = None
         self._fire_prob = None
+        self._nodes_explored = None
 
     def generate_maze(self):
         """generate the matrix for the maze game
@@ -198,7 +199,7 @@ class MazeGame:
         :param is_dfs: True/False for dfs/bfs
         :return whether start and goal are reachable from each other
         """
-        
+        self._nodes_explored = 0
         self._matrix = self._m.copy()
         m = self._matrix
         if m[start[0]][start[1]] == 1 or m[goal[0]][goal[1]] == 1:
@@ -209,6 +210,7 @@ class MazeGame:
             if not cell.is_available():
                 continue
             cell.close()  # add restriction
+            self._nodes_explored += 1
             if cell.get_coords() == goal:
                 self._path = cell.get_path()
                 return True
@@ -232,6 +234,7 @@ class MazeGame:
         :param goal: int tuple contains goal coordinates
         :return whether start and goal are reachable from each other
         """
+        self._nodes_explored = 0
         self._matrix = self._m.copy()
         m = self._matrix
         if m[start[0]][start[1]] == 1 or m[goal[0]][goal[1]] == 1:
@@ -244,6 +247,7 @@ class MazeGame:
             if not cell.is_available():
                 continue
             cell.close()  # add restriction
+            self._nodes_explored += 1
             if cell.get_coords() == goal:
                 self._path = cell.get_path()
                 return True
@@ -260,6 +264,12 @@ class MazeGame:
         :return: a list of cells that form the shortest path
         """
         return self._path
+    
+    def get_nodes(self):
+        """getter
+        :return: number of nodes explored
+        """
+        return self._nodes_explored
 
     def get_original_matrix(self):
         """getter
@@ -390,8 +400,7 @@ class MazeGame:
                 return False
             for fire in self._fire_loc:
                 if point[0] == fire[0] and point[1] == fire[1]:
-                    return False
-        
+                    return False        
         
 def test_strat_1(n):
     average_success_per_q = []
@@ -406,7 +415,6 @@ def test_strat_1(n):
             maze = game.get_original_matrix()
             if game.dfs((0,0), (n-1,n-1)) == False:
                 continue
-            print("Maze", i)
             j=1
             while j<= 10:
                 fire_game = MazeGame(n, 0.3, q/10, maze)
@@ -424,7 +432,17 @@ def test_strat_1(n):
             maze_success+=success
         average_success_per_q.append(maze_success/10)
         q+=1
-    return average_success_per_q
+    q_vals = ['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0']
+    avg_success = np.array(average_success_per_q)
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.bar(q_vals, avg_success)
+    ax.set_title('Average Successes vs Fire Spread Rate (Strategy 1)', fontdict={'fontsize': 18, 'fontweight': 'medium'})
+    plt.yticks(np.arange(0, avg_success.max()+1, 1))
+    plt.xlabel('Fire Spread Rate (q)', fontsize=12)
+    plt.ylabel('Average Successes', fontsize=12)
+    plt.show()
+    
 def test_strat_2(n):
     average_success_per_q = []
     q=0.0
@@ -455,7 +473,16 @@ def test_strat_2(n):
             maze_success+=success
         average_success_per_q.append(maze_success/10)
         q+=1
-    return average_success_per_q
+    q_vals = ['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0']
+    avg_success = np.array(average_success_per_q)
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.bar(q_vals, avg_success)
+    ax.set_title('Average Successes vs Fire Spread Rate (Strategy 2)', fontdict={'fontsize': 18, 'fontweight': 'medium'})
+    plt.yticks(np.arange(0, avg_success.max()+1, 1))
+    plt.xlabel('Fire Spread Rate (q)', fontsize=12)
+    plt.ylabel('Average Successes', fontsize=12)
+    plt.show()
 
 def test_strat_3(n):
     average_success_per_q = []
@@ -487,13 +514,139 @@ def test_strat_3(n):
             maze_success+=success
         average_success_per_q.append(maze_success/10)
         q+=1
-    return average_success_per_q
+    q_vals = ['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0']
+    avg_success = np.array(average_success_per_q)
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.bar(q_vals, avg_success)
+    ax.set_title('Average Successes vs Fire Spread Rate (Strategy 3)', fontdict={'fontsize': 18, 'fontweight': 'medium'})
+    plt.yticks(np.arange(0, avg_success.max()+1, 1))
+    plt.xlabel('Fire Spread Rate (q)', fontsize=12)
+    plt.ylabel('Average Successes', fontsize=12)
+    plt.show()
 
+def test_dfs(n, trials):
+    success_prob_per_p = []
+    p = 0.0
+    while p/10 <= 1.0:
+        print(p/10)
+        i=1
+        success = 0
+        while i<=trials:
+            game = MazeGame(n, p/10)
+            if game.dfs((0,0), (n-1, n-1)) == False:
+                i+=1
+                continue
+            else:
+                i+=1
+                success+=1
+        success_prob_per_p.append(success/trials)
+        p+=1
+    p_vals = ['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0']
+    success_prob = np.array(success_prob_per_p)
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.bar(p_vals, success_prob)
+    ax.set_title('Success Probability vs Obstacle Density', fontdict={'fontsize': 18, 'fontweight': 'medium'})
+    plt.yticks(np.arange(0, 1.1, 0.1))
+    plt.xlabel('Obstacle Density (p)', fontsize=12)
+    plt.ylabel('Success Probability', fontsize=12)
+    plt.show()
+    
+def test_bfs_a_star(n, num_trials):
+    average_node_dif = []
+    p = 0.0
+    while p/10 <= 1.0:
+        print(p/10)
+        i=1
+        node_dif = 0
+        while i<=num_trials:
+            game = MazeGame(n, p/10)
+            game.bfs((0,0), (n-1,n-1))
+            bfs_nodes = game.get_nodes()
+            game.a_star((0,0), (n-1,n-1))
+            a_star_nodes = game.get_nodes()
+            node_dif += (bfs_nodes - a_star_nodes)
+            i+=1
+        average_node_dif.append(node_dif/num_trials)
+        p+=1
+    p_vals = ['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0']
+    avg_node_dif = np.array(average_node_dif)
+    fig = plt.figure()
+    ax = fig.add_axes([0,0,1,1])
+    ax.bar(p_vals, avg_node_dif)
+    ax.set_title('(BFS Nodes - A* Nodes) vs Obstacle Density', fontdict={'fontsize': 18, 'fontweight': 'medium'})
+    plt.yticks(np.arange(0, avg_node_dif.max()+n, n))
+    plt.xlabel('Obstacle Density (p)', fontsize=12)
+    plt.ylabel('BFS Nodes - A* Nodes', fontsize=12)
+    plt.show()
+
+def test_time_bfs():
+    time_consumed = 0
+    size = 2500
+    while time_consumed <= 60:
+        i=1
+        while i <= 5:
+            game = MazeGame(size, 0.3)
+            time_start = time.time()
+            if game.bfs((0,0), (size-1, size-1)) == False:
+                continue
+            time_end = time.time()
+            time_consumed += time_end-time_start
+            i+=1
+        time_consumed = time_consumed/5
+        print(size, ":", time_consumed)
+        size += 100
+    print("Largest BFS size:", size-200, "x", size-200)
+    
+def test_time_dfs():
+    time_consumed = 0
+    size = 650
+    while time_consumed <= 60:
+        i=1
+        while i <= 5:
+            game = MazeGame(size, 0.3)
+            time_start = time.time()
+            if game.dfs((0,0), (size-1, size-1)) == False:
+                continue
+            time_end = time.time()
+            time_consumed += time_end-time_start
+            i+=1
+        time_consumed = time_consumed/5
+        print(size, ":", time_consumed)
+        size += 10
+    print("Largest DFS size:", size-20, "x", size-20)
+
+def test_time_a_star():
+    time_consumed = 0
+    size = 1000
+    while time_consumed <= 60:
+        i=1
+        while i <= 5:
+            game = MazeGame(size, 0.3)
+            time_start = time.time()
+            if game.a_star((0,0), (size-1, size-1)) == False:
+                continue
+            time_end = time.time()
+            time_consumed += time_end-time_start
+            i+=1
+        time_consumed = time_consumed/5
+        print(size, ":", time_consumed)
+        size += 50
+    print("Largest A* size:", size-100, "x", size-100)    
+    
 # Test
 if __name__ == '__main__':
-    n = 10
-    p = 0.3
+    n = 250
+    p = 0.0
     q = 1.0
     
-    print(test_strat_3(n))
-    #print(test_strat_2(n))
+    test_dfs(n, 25)
+    test_bfs_a_star(n, 25)
+    test_time_bfs()
+    test_time_dfs()
+    test_time_a_star()
+    test_strat_1(75)
+    test_strat_2(75)
+    test_strat_3(75)
+    
