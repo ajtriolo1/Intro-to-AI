@@ -24,13 +24,13 @@ class Coord:
         """check whether the cell is available in the game
         :return: boolean
         """
-        return self._m[self._x][self._y] == 0 or self._m[self._x][self._y] == -2
+        return self._m[self._x][self._y] == 0
 
     def get_neighbor_coords(self):
         x, y = (self._x, self._y)
-        coords = [(x, y + 1), (x - 1, y), (x + 1, y), (x, y - 1)]
+        coords = [(x - 1, y), (x, y - 1), (x + 1, y), (x, y + 1)]
         dim = len(self._m)
-        li = [(a, b) for (a, b) in coords if 0 <= a < dim and 0 <= b < dim and (self._m[a][b] == 0 or self._m[a][b] == -2)]
+        li = [(a, b) for (a, b) in coords if 0 <= a < dim and 0 <= b < dim and self._m[a][b] == 0]
         return li
 
     def close(self):
@@ -400,7 +400,14 @@ class MazeGame:
                 return False
             for fire in self._fire_loc:
                 if point[0] == fire[0] and point[1] == fire[1]:
-                    return False        
+                    return False
+                
+    def plot_path(self):
+        color_list = ['#ffff00', 'w', '#808080', 'g']  # [-1 yellow, 0 white, 1 grey, 2 green]
+        no_path_colors = ['#ffff00', 'w', '#808080']
+        colors = ListedColormap(color_list if len(self._path) > 0 else no_path_colors)
+        plt.matshow(self._matrix, interpolation='none', cmap=colors)
+        plt.show()
         
 def test_strat_1(n):
     average_success_per_q = []
@@ -601,7 +608,7 @@ def test_time_bfs():
     
 def test_time_dfs():
     time_consumed = 0
-    size = 650
+    size = 7000
     while time_consumed <= 60:
         i=1
         while i <= 5:
@@ -610,12 +617,13 @@ def test_time_dfs():
             if game.dfs((0,0), (size-1, size-1)) == False:
                 continue
             time_end = time.time()
+            print(time_end-time_start)
             time_consumed += time_end-time_start
             i+=1
         time_consumed = time_consumed/5
         print(size, ":", time_consumed)
-        size += 10
-    print("Largest DFS size:", size-20, "x", size-20)
+        size += 100
+    print("Largest DFS size:", size-200, "x", size-200)
 
 def test_time_a_star():
     time_consumed = 0
@@ -637,16 +645,17 @@ def test_time_a_star():
     
 # Test
 if __name__ == '__main__':
-    n = 250
-    p = 0.0
+    n = 500
+    p = 0.3
     q = 1.0
     
+    
+
     test_dfs(n, 25)
     test_bfs_a_star(n, 25)
-    test_time_bfs()
-    test_time_dfs()
+    #test_time_bfs()
+    #test_time_dfs()
     test_time_a_star()
-    test_strat_1(75)
-    test_strat_2(75)
-    test_strat_3(75)
-    
+    #test_strat_1(75)
+    #test_strat_2(75)
+    #test_strat_3(75)
