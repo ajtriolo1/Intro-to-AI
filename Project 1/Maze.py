@@ -410,7 +410,7 @@ class MazeGame:
     
     def strat_3(self):
         """
-        Strategy 3 of trying to survive the while moving through a maze
+        Strategy 3 of trying to survive the while moving through a maze using the new SAS algorithm
         """
         if self._q == 0.0:
             return True
@@ -711,3 +711,4 @@ if __name__ == '__main__':
     test_strat_1(75)
     test_strat_2(75)
     test_strat_3(75)
+            
