@@ -1,7 +1,7 @@
 import time
 from Maze import *
 
-
+"""Module for simulating fire for SAS"""
 class FireMaze(MazeGame):
     def __init__(self, dim: int, p: float, q: float, maze, fire_coord):
         super().__init__(dim, p, q)
