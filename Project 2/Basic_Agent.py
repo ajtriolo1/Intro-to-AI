@@ -36,13 +36,12 @@ class Cell:
         self.safe = safe
                 
 class Agent:
-    def __init__(self, d:int, n:int):
-        self._game = MinesweeperGame(d, n)
+    def __init__(self, d:int, game:MinesweeperGame):
+        self._game = game
         self._board  = [[Cell(row, col, d) for col in range(d)] for row in range(d)]
         self._dim = d
         self._to_check = []
         self._identified = 0
-        self._mines = n
         
     def play_game(self):
         self._game.start_game()
@@ -66,12 +65,15 @@ class Agent:
                     self._to_check.remove(cell)
                     continue
                 cell.update_info(self._board)
+                if cell.hidden == 0:
+                    self._to_check.remove(cell)
+                    continue
                 neighbors = cell.get_neighbors()
                 if (cell.value - cell.mines) == cell.hidden:
                     for neighbor in neighbors:
                         x, y = neighbor[0], neighbor[1]
                         if self._board[x][y].value == -2:
-                            self._board[x][y].value = self._game.query((x,y))
+                            self._board[x][y].value = -1
                             self._board[x][y].update_info(self._board)
                             self._identified += 1
                     for neighbor in neighbors:
@@ -106,7 +108,7 @@ class Agent:
                 self.print_board()
                 if len(self.get_hidden()) == 0:
                     break
-        print(self._identified/self._mines)
+        return self._identified
 
     
     def print_board(self):
@@ -142,5 +144,6 @@ class Agent:
             
 if __name__ == '__main__':
     
-    agent = Agent(10, 50)
+    game = MinesweeperGame(10, 50)
+    agent = Agent(10, game)
     agent.play_game()
