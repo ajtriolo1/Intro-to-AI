@@ -79,6 +79,7 @@ class Agent:
                     for neighbor in neighbors:
                          x, y = neighbor[0], neighbor[1]
                          self._board[x][y].update_info(self._board)
+                    cell.update_info(self._board)
                     free = self.get_free()
                     for cells in free:
                         if self._board[cells[0]][cells[1]] not in self._to_check:
@@ -93,6 +94,7 @@ class Agent:
                     for neighbor in neighbors:
                           x, y = neighbor[0], neighbor[1]
                           self._board[x][y].update_info(self._board)
+                    cell.update_info(self._board)
                     free = self.get_free()
                     for cells in free:
                         if self._board[cells[0]][cells[1]] not in self._to_check:
