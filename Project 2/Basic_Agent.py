@@ -44,7 +44,6 @@ class Agent:
         self._identified = 0
         
     def play_game(self):
-        self._game.start_game()
         while len(self.get_hidden()) > 0:
             rand_x, rand_y = self.pick_random()
             rand_cell = self._board[rand_x][rand_y]
@@ -147,5 +146,6 @@ class Agent:
 if __name__ == '__main__':
     
     game = MinesweeperGame(10, 50)
+    game.start_game()  # This is how we will test both agents, so that both agents do operations on same game for consistency
     agent = Agent(10, game)
-    agent.play_game()
+    agent.play_game()/50
