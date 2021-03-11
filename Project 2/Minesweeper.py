@@ -14,15 +14,17 @@ class MinesweeperGame:
         return [(a, b) for (a, b) in transform if 0 <= a < self._dim and 0 <= b < self._dim]
         
     def _add_mines(self):
-        for num in range(self._n):
+        num = 0
+        while num < self._n:
             x = random.randint(0, self._dim-1)
             y = random.randint(0, self._dim-1)
-            self._board[x][y] = -1
-            
-            neighbors = self._get_neighbors((x,y))
-            for neighbor in neighbors:
-                if self._board[neighbor[0]][neighbor[1]] != -1:
-                    self._board[neighbor[0]][neighbor[1]] += 1
+            if self._board[x][y] != -1:
+                self._board[x][y] = -1
+                neighbors = self._get_neighbors((x,y))
+                for neighbor in neighbors:
+                    if self._board[neighbor[0]][neighbor[1]] != -1:
+                        self._board[neighbor[0]][neighbor[1]] += 1
+                num+=1
                     
     def start_game(self):
         self._add_mines()
@@ -30,6 +32,9 @@ class MinesweeperGame:
         
     def query(self, cell: Tuple[int, int]):
         return self._board[cell[0]][cell[1]]
+    
+    def print_game(self):
+        print(self._board)
         
 if __name__ == '__main__':
     game = MinesweeperGame(10, 10)
