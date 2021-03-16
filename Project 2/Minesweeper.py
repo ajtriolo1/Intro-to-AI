@@ -28,7 +28,7 @@ class MinesweeperGame:
                     
     def start_game(self):
         self._add_mines()
-        print(self._board)
+        #print(self._board)
         
     def query(self, cell: Tuple[int, int]):
         return self._board[cell[0]][cell[1]]
