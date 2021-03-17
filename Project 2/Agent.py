@@ -2,7 +2,7 @@ import operator
 import numpy as np
 import random
 from typing import Tuple, Optional, List, Dict
-from Environment import transitions, Environment
+from Improved_Environment import transitions, Environment
 from sympy import Matrix
 
 

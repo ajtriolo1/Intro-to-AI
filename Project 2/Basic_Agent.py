@@ -5,7 +5,7 @@ from Minesweeper import MinesweeperGame
 import random
 import numpy as np
 from Agent import Agent as ImprovedAgent
-from Environment import Environment
+from Improved_Environment import Environment
 
 
 class Cell:
