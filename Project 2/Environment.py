@@ -15,6 +15,7 @@ def rand_mine(d: int, n: int) -> np.ndarray:
     arr = np.array([0] * (d ** 2 - n) + [1] * n)  # d^2 - n zeros and n ones.
     np.random.shuffle(arr)  # shuffle the 1d array to have zeros and ones distributed randomly.
     matrix = np.reshape(arr, (-1, d))  # convert the 1d array to a square _matrix
+    print("Board:")
     print(matrix)
     return matrix
 
