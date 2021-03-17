@@ -56,7 +56,8 @@ class Agent:
         self._identified = 0 # Correctly marked mines
         
     def play_game(self):
-        """ Run the actual process of playing the game
+        """ 
+        Run the actual process of playing the game
         :return: Number of mines correctly identified
         """
         while len(self.get_hidden()) > 0: # While there are still cells to be revealed
@@ -123,7 +124,8 @@ class Agent:
         return self._identified
 
     def print_board(self):
-        """ Helper function to print the board
+        """ 
+        Helper function to print the board
         :return: None
         """
         board_vals = np.empty([self._dim, self._dim], dtype=int)
