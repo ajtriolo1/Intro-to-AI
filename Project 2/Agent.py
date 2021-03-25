@@ -96,14 +96,14 @@ class Agent:
             # print(f'v: {v}; num: {num}')
             row += 1
 
-        self.print_kb()
-        print(f'Variable list: {var_list}')
-        print(f'Augmented matrix (equations):')
-        print(matrix)
+        #self.print_kb()
+        #print(f'Variable list: {var_list}')
+        #print(f'Augmented matrix (equations):')
+        #print(matrix)
         has_new_info_1 = self.evaluate_equations(var_list, matrix)
-        print(f'RREF of matrix:')
+        #print(f'RREF of matrix:')
         rref_matrix = Matrix(matrix).rref()[0].tolist()
-        print(rref_matrix)
+        #print(rref_matrix)
         has_new_info_2 = self.evaluate_equations(var_list, rref_matrix)
 
         has_new_info = has_new_info_1 or has_new_info_2
@@ -140,7 +140,7 @@ class Agent:
         i = np.random.randint(len(x))
         random_pos = (x[i], y[i])
         # print
-        print(f'Random Guess: {random_pos} is safe')
+        #print(f'Random Guess: {random_pos} is safe')
         self.update(random_pos, 0)
         if len(self.kb) != 0:
             self.reasoning()
@@ -175,7 +175,7 @@ class Agent:
                 for index in positive_var_indices + negative_var_indices:
                     # add to knowledge base; mark the cell; update num and mine matrices.
                     # print
-                    print(f"Inference: {var_list[index]} is safe")
+                    #print(f"Inference: {var_list[index]} is safe")
                     self.update(var_list[index], 0)
                 continue
             # case 2: all non-zero variables are with the same sign and sum(left) = value: all vars are 1.
@@ -184,7 +184,7 @@ class Agent:
                 for index in positive_var_indices + negative_var_indices:
                     # self.update(var_list[index], 1)
                     # print
-                    print(f"Inference: {var_list[index]} is a mine")
+                    #print(f"Inference: {var_list[index]} is a mine")
                     x, y = var_list[index]
                     self.mine_matrix[x][y] = 1
                 continue
@@ -193,12 +193,12 @@ class Agent:
                 has_new_info = True
                 for index in positive_var_indices:
                     # print
-                    print(f"Inference: {var_list[index]} is safe")
+                    #print(f"Inference: {var_list[index]} is safe")
                     self.update(var_list[index], 0)
                 for index in negative_var_indices:
                     # self.update(var_list[index], 1)
                     # print
-                    print(f"Inference: {var_list[index]} is a mine")
+                    #print(f"Inference: {var_list[index]} is a mine")
                     x, y = var_list[index]
                     self.mine_matrix[x][y] = 1
                 continue
@@ -208,12 +208,12 @@ class Agent:
                 for index in positive_var_indices:
                     # self.update(var_list[index], 1)
                     # print
-                    print(f"Inference: {var_list[index]} is a mine")
+                    #print(f"Inference: {var_list[index]} is a mine")
                     x, y = var_list[index]
                     self.mine_matrix[x][y] = 1
                 for index in negative_var_indices:
                     # print
-                    print(f"Inference: {var_list[index]} is safe")
+                    #print(f"Inference: {var_list[index]} is safe")
                     self.update(var_list[index], 0)
                 continue
 
@@ -228,7 +228,7 @@ class Agent:
         x, y = coord
         if self.mine_matrix[x][y] == -1:
             if self.env.mark(x, y, val):
-                print(f'Mark ({x}, {y}) as safe')
+                #print(f'Mark ({x}, {y}) as safe')
                 self.mine_matrix[x][y] = 0
                 _, mines = self.env.query(x, y)
                 self.kb.append((x, y, mines))
@@ -236,7 +236,7 @@ class Agent:
             else:
                 self.mine_matrix[x][y] = 1
                 self.fail += 1
-                print(f'Error: Mark ({x}, {y}) as safe')
+                #print(f'Error: Mark ({x}, {y}) as safe')
 
 
 class Guess:
