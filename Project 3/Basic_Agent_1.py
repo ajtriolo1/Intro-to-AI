@@ -1,6 +1,7 @@
 from Environment import Environment
 import numpy as np
 import random
+import time
 
 class Agent:
     def __init__(self, env: Environment):
@@ -69,10 +70,14 @@ class Agent:
                 return num_steps + num_search
         
 if __name__ == '__main__':
-    env = Environment(10)
+    env = Environment(50)
+    env.set_target()
     env.print_map()
     env.print_target()
     agent = Agent(env)
+    time_start = time.time()
     print(agent.run_game())       
+    time_end = time.time()
+    print(time_end - time_start)
     
     

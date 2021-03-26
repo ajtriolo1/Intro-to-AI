@@ -5,21 +5,21 @@ class Environment:
     def __init__(self, d:int):
         self.dim = d
         self.map = self.build_map()
-        self.target = self.set_target()
-        self.f_n = {1:0.1, 2:0.3, 3:0.7, 4:0.9}
+        self.target = (0,0)
+        self.f_n = {1:1/10, 2:3/10, 3:7/10, 4:9/10}
         
     def build_map(self):
         game_map = np.zeros([self.dim, self.dim], dtype=int)
         for x in range(self.dim):
             for y in range(self.dim):
                 p = random.uniform(0,1)
-                if (p < 0.25):
+                if (p <= 1/4):
                     game_map[x][y] = 1
                     continue
-                elif (p < 0.5):
+                elif (p <= 1/2):
                     game_map[x][y] = 2
                     continue
-                elif (p < .75):
+                elif (p <= 3/4):
                     game_map[x][y] = 3
                     continue
                 else:
@@ -31,7 +31,7 @@ class Environment:
         x = random.randint(0, self.dim-1)
         y = random.randint(0, self.dim-1)
         
-        return (x, y)
+        self.target = (x, y)
     
     def is_target(self, cell: (int, int)):
         target_x, target_y = self.target
@@ -57,5 +57,5 @@ class Environment:
         return self.target
     
     def print_target(self):
-        print(self.target)
+        print(self.target, self.map[self.target[0]][self.target[1]])
         
