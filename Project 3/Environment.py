@@ -56,14 +56,6 @@ class Environment:
     def get_target(self):
         return self.target
     
-    def print_target_type(self):
-        print(self.map[target[0]][target[1]])
+    def print_target(self):
+        print(self.target)
         
-        
-if __name__ == '__main__':
-    env = Environment(10)
-    env.print_map()
-    target = env.get_target()
-    print(target)
-    env.print_target_type()
-    print(env.is_target(target))
