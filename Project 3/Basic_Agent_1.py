@@ -45,13 +45,22 @@ class Agent:
                 for y in range(self.dim):
                     self.update_belief((x, y), p_obs)
         else:
-            return num_steps + num_search
+            return num_steps, num_search
         while True:
             largest = np.where(self.beliefs == np.amax(self.beliefs))
             largest_indices = list(zip(largest[0], largest[1]))
             if len(largest_indices) > 1:
-                num_steps += abs(largest_indices[0][0]-cell[0]) + abs(largest_indices[0][1]-cell[1])
-                cell = largest_indices[random.randint(0, len(largest_indices)-1)]
+                distances = list()
+                for indices in largest_indices:
+                    distances.append(abs(indices[0]-cell[0]) + abs(indices[1]-cell[1]))
+                shortest = [i for i, x in enumerate(distances) if x == min(distances)]
+                if len(shortest) > 1:
+                    index = random.randint(0, len(shortest)-1)
+                    num_steps += distances[shortest[index]]
+                    cell = largest_indices[shortest[index]]
+                else: 
+                    num_steps += distances[shortest[0]]
+                    cell = largest_indices[shortest[0]]
             else:
                 num_steps += abs(largest_indices[0][0]-cell[0]) + abs(largest_indices[0][1]-cell[1])
                 cell = largest_indices[0]
@@ -67,7 +76,8 @@ class Agent:
                     for y in range(self.dim):
                         self.update_belief((x, y), p_obs)
             else:
-                return num_steps + num_search
+                return num_steps, num_search
+        
         
 if __name__ == '__main__':
     env = Environment(50)
