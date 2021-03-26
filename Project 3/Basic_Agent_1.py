@@ -10,23 +10,22 @@ class Agent:
         self.p_f = {1:1/10, 2:3/10, 3:7/10, 4:9/10}
         self.beliefs = np.full(self.map.shape, 1/(self.dim*self.dim))
         self.init_prob = 1/(self.dim*self.dim)
-        self.observed = list()
+        self.observed = {}
         
     def update_belief(self, cell: (int, int), p_obs):
         self.beliefs[cell[0]][cell[1]] = (self.p_obs_given_cell(cell) * self.init_prob)/p_obs
         
     def p_obs_given_cell(self, cell: (int, int)):
-        obs_prob = 1
-        for obs in self.observed:
+        for obs in self.observed.keys():
             cell_x, cell_y = cell
             cell_type = self.map[cell_x][cell_y]
             if obs == cell:
-                obs_prob *= self.p_f[cell_type]
-        return obs_prob
+                return self.p_f[cell_type]**self.observed[obs]
+        return 1    
     
     def get_p_obs(self):
         p_obs = 0
-        for cell in set(self.observed):
+        for cell in self.observed.keys():
             p_obs += (self.init_prob * self.p_obs_given_cell(cell))
         if len(self.observed) < self.dim*self.dim:
             p_obs += self.init_prob * (self.dim*self.dim-len(self.observed))
@@ -39,7 +38,7 @@ class Agent:
         map_y = random.randint(0, self.dim-1)
         cell = (map_x, map_y)
         if not self.env.is_target(cell):
-            self.observed.append(cell)
+            self.observed[cell] = 1
             p_obs = self.get_p_obs()
             for x in range(self.dim):
                 for y in range(self.dim):
@@ -58,7 +57,10 @@ class Agent:
             
             num_search += 1
             if not self.env.is_target(cell):
-                self.observed.append(cell)
+                if cell in self.observed.keys():
+                    self.observed[cell] += 1
+                else:
+                    self.observed[cell] = 1
                 p_obs = self.get_p_obs()
                 for x in range(self.dim):
                     for y in range(self.dim):
@@ -67,7 +69,7 @@ class Agent:
                 return num_steps + num_search
         
 if __name__ == '__main__':
-    env = Environment(20)
+    env = Environment(10)
     env.print_map()
     env.print_target()
     agent = Agent(env)
