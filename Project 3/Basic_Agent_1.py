@@ -17,30 +17,31 @@ class Agent:
         self.beliefs[cell[0]][cell[1]] = (self.p_obs_given_cell(cell) * self.init_prob)/p_obs
         
     def p_obs_given_cell(self, cell: (int, int)):
-        for obs in self.observed.keys():
+        if cell in self.observed.keys():
             cell_x, cell_y = cell
             cell_type = self.map[cell_x][cell_y]
-            if obs == cell:
-                return self.p_f[cell_type]**self.observed[obs]
-        return 1    
+            return self.p_f[cell_type]**self.observed[cell]
+        else:
+            return 1
+
     
-    def get_p_obs(self):
-        p_obs = 0
-        for cell in self.observed.keys():
-            p_obs += (self.init_prob * self.p_obs_given_cell(cell))
-        if len(self.observed) < self.dim*self.dim:
-            p_obs += self.init_prob * (self.dim*self.dim-len(self.observed))
-        return p_obs
+    def get_p_obs(self, cell: (int, int), p_obs):
+        cell_type = self.map[cell[0]][cell[1]]
+        if p_obs == 0:
+            return self.p_f[cell_type]*self.init_prob + ((self.dim**2-1)*self.init_prob)
+        else:
+            return p_obs-(self.p_f[cell_type]**(self.observed[cell]-1)-self.p_f[cell_type]**self.observed[cell])*self.init_prob
     
     def run_game(self):
         num_steps = 1
         num_search = 1
+        p_obs = 0
         map_x = random.randint(0, self.dim-1)
         map_y = random.randint(0, self.dim-1)
         cell = (map_x, map_y)
         if not self.env.is_target(cell):
             self.observed[cell] = 1
-            p_obs = self.get_p_obs()
+            p_obs = self.get_p_obs(cell, p_obs)
             for x in range(self.dim):
                 for y in range(self.dim):
                     self.update_belief((x, y), p_obs)
@@ -64,14 +65,13 @@ class Agent:
             else:
                 num_steps += abs(largest_indices[0][0]-cell[0]) + abs(largest_indices[0][1]-cell[1])
                 cell = largest_indices[0]
-            
             num_search += 1
             if not self.env.is_target(cell):
                 if cell in self.observed.keys():
                     self.observed[cell] += 1
                 else:
                     self.observed[cell] = 1
-                p_obs = self.get_p_obs()
+                p_obs = self.get_p_obs(cell, p_obs)
                 for x in range(self.dim):
                     for y in range(self.dim):
                         self.update_belief((x, y), p_obs)
