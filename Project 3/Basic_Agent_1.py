@@ -53,8 +53,7 @@ class Agent:
                 for y in range(self.dim):
                     self.update_belief((x, y), p_obs)
         else:
-            return num_steps + num_search
-        print(self.beliefs)
+            return num_steps, num_search
         while True:
             largest = np.where(self.beliefs == np.amax(self.beliefs))
             largest_coords = list(zip(largest[0], largest[1]))
@@ -87,10 +86,10 @@ class Agent:
                     for y in range(self.dim):
                         self.update_belief((x, y), p_obs)
             else:
-                return num_steps + num_search
-            print(self.beliefs)
+                return num_steps, num_search
         
 if __name__ == '__main__':
+    """
     agent_1_stats = 0
     agent_2_stats = 0
     for mazes in range(10):
@@ -119,14 +118,32 @@ if __name__ == '__main__':
     plt.title('Average score for each agent')
     plt.xticks(x_pos, x)
     plt.show()
+    """
 
-    """
-    env = Environment(2)
-    env.set_target()
+    env = Environment(50)
     env.print_map()
-    env.print_target()
-    agent_1 = Agent(env, 1)
-    agent_2 = Agent(env, 2)
-    print(agent_1.run_game())
-    print(agent_2.run_game())
-    """
+    agent_1_steps = 0
+    agent_1_searches = 0
+    agent_2_steps = 0
+    agent_2_searches = 0
+    for i in range(10):
+        env.set_target()
+        env.print_target()
+        agent_1 = Agent(env, 1)
+        agent_2 = Agent(env, 2)
+        print('Trial', i+1, 'for agent 1')
+        agent_1_result = agent_1.run_game()
+        print('\t Done in', agent_1_result[0], 'steps and', agent_1_result[1], 'searches')    
+        agent_1_steps += agent_1_result[0]
+        agent_1_searches += agent_1_result[1]
+        print('Trial', i+1, 'for agent 2')
+        agent_2_result = agent_2.run_game()
+        print('\t Done in', agent_2_result[0], 'steps and', agent_2_result[1], 'searches')    
+        agent_2_steps += agent_2_result[0]
+        agent_2_searches += agent_2_result[1]
+    agent_1_steps /= 10
+    agent_1_searches /= 10
+    agent_2_steps /= 10
+    agent_2_searches /= 10
+    print('Agent 1 had', agent_1_steps, 'steps and', agent_1_searches, 'searches on average')
+    print('Agent 2 had', agent_2_steps, 'steps and', agent_2_searches, 'searches on average')
