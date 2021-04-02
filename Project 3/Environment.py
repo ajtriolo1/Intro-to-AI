@@ -55,7 +55,9 @@ class Environment:
         
     def get_target(self):
         return self.target
-    
+    def get_target_type(self):
+        return self.map[self.target[0]][self.target[1]]
+        
     def print_target(self):
         print(self.target, self.map[self.target[0]][self.target[1]])
         
