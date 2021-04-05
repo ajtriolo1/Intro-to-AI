@@ -1,6 +1,6 @@
-from Test import test_basic_agents
+from Test import test_agents, plot
 
 
 if __name__ == '__main__':
-    test_basic_agents()
-    
+    test_agents()
+    plot()
