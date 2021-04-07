@@ -6,13 +6,10 @@ from Improved_Agent import Agent
 
 def test_agents():
     result = np.zeros([5, 5])
-    # i = 4
     maps, trials_per_map = 10, 10
-    # while i > 0:
     ave_cost_1 = []
     ave_cost_2 = []
     ave_cost_3 = []
-    # ave_cost_4 = []
     for j in range(maps):
         en = Env(50)
         cost_1 = []
@@ -24,11 +21,6 @@ def test_agents():
             # en.set_target_on_type(i)
             en.set_target()
             en.print_target()
-
-            # agent_1 = Agent(en)
-            # searches_1, distance_1 = agent_1.run_improved()
-            # sum_1 = searches_1 + distance_1
-            # cost_1.append(sum_1)
 
             agent_1 = Agent(en)
             searches_1, distance_1 = agent_1.run(1, False)
@@ -45,21 +37,13 @@ def test_agents():
             sum_3 = searches_3 + distance_3
             cost_3.append(sum_3)
 
-            # agent_4 = Agent(en)
-            # searches_4, distance_4 = agent_4.run(2, True)
-            # sum_4 = searches_4 + distance_4
-            # cost_4.append(sum_4)
-
         ave_cost_1.append(sum(cost_1) / len(cost_1))
         ave_cost_2.append(sum(cost_2) / len(cost_2))
         ave_cost_3.append(sum(cost_3) / len(cost_3))
-        # ave_cost_4.append(sum(cost_4) / len(cost_4))
     result[0][1] = sum(ave_cost_1) / len(ave_cost_1)
     result[0][2] = sum(ave_cost_2) / len(ave_cost_2)
     result[0][3] = sum(ave_cost_3) / len(ave_cost_3)
-    # result[i][4] = sum(ave_cost_4) / len(ave_cost_4)
     print(result)
-    # i -= 1
 
 
 def plot():
