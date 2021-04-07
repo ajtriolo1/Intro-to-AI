@@ -1,0 +1,4 @@
+Agent 1 had 11223.71 steps and 5731.31 searches on average for a score of 16955.02
+Agent 2 had 10876.76 steps and 4799.9 searches on average for a score of 15676.66
+Agent 3 had 3652.55 steps and 5955.1 searches on average for a score of 9607.65
+{1: 24, 2: 30, 3: 24, 4: 22}

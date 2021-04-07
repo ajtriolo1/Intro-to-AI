@@ -63,5 +63,6 @@ class Environment:
     def print_target(self):
         print(f'Location: {self.target}, type: {self.map[self.target[0]][self.target[1]]}')
 
-    def get_tart_type(self):
+    def get_target_type(self):
         return self.map[self.target[0]][self.target[1]]
+        
